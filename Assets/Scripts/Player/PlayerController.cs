@@ -36,6 +36,8 @@ public class PlayerController : MonoBehaviour
         canBoost = true;
 
         BoostBar.BoostEnabled += SetCanBoost;
+        KillZone.GameOver += DisablePlayer;
+        LevelLoader.LevelComplete += DisablePlayer;
     }
 
     private void Start()
@@ -51,6 +53,8 @@ public class PlayerController : MonoBehaviour
     private void OnDestroy()
     {
         BoostBar.BoostEnabled -= SetCanBoost;
+        KillZone.GameOver -= DisablePlayer;
+        LevelLoader.LevelComplete -= DisablePlayer;
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -88,6 +92,13 @@ public class PlayerController : MonoBehaviour
             currentBoostPower = 0f;
     }
 
+    private void DisablePlayer()
+    {
+        boostPower = 0f;
+        moveSpeed = 0f;
+        playerCollider.gameObject.SetActive(false);
+    }
+
     private bool IsGrounded()
     {
         if (Physics2D.Raycast(playerCollider.bounds.center, -transform.up, 0.9f, LayerMask.GetMask("Ground")))
@@ -96,7 +107,7 @@ public class PlayerController : MonoBehaviour
         return false;
     }
 
-    private void JumpPerformed()
+    private void BoostPerformed()
     {
         downwardVelocity = 1f;
         currentBoostPower = canBoost ? boostPower : 0f;
@@ -104,7 +115,7 @@ public class PlayerController : MonoBehaviour
         particleController.EnableParticles();
     }
 
-    private void JumpCanceled()
+    private void BoostCanceled()
     {
         currentBoostPower = 0f;
         CheckIfGrounded();
@@ -137,9 +148,9 @@ public class PlayerController : MonoBehaviour
     public void PlayerJump(InputAction.CallbackContext context)
     {
         if (context.performed)
-            JumpPerformed();
+           BoostPerformed();
         
         if(context.canceled)
-           JumpCanceled();
+           BoostCanceled();
     }
 }

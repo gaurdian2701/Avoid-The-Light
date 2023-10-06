@@ -19,7 +19,7 @@ public class ChomperWalkingState : ChomperBaseState
             chomper.RestoreSpeed();
 
         Vector3 position = chomper.transform.position;
-        position.x += chomper.transform.forward.z * chomper.currentSpeed * Time.deltaTime;
+        position.x += chomper.transform.forward.z * chomper.GetCurrentSpeed() * Time.deltaTime;
         chomper.transform.position = position;
 
         BoxCollider2D enemyCollider = chomper.GetComponent<BoxCollider2D>();
