@@ -6,7 +6,7 @@ public class ChomperIdleState : ChomperBaseState
 {
     public override void EnterState(ChomperStateManager chomper)
     {
-        chomper.currentSpeed = 0f;
+        chomper.SetCurrentSpeed(0f);
         Animator animator = chomper.GetComponent<Animator>();
         animator.Rebind();
 

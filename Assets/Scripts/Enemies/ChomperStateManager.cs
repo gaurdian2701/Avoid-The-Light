@@ -9,17 +9,22 @@ public class ChomperStateManager : MonoBehaviour
     public ChomperIdleState idle = new ChomperIdleState();
     public ChomperWalkingState walk = new ChomperWalkingState();
 
-    private BoxCollider2D enemyCollider;
     private float moveSpeed = 2f;
-
-    public float currentSpeed;
+    private float currentSpeed;
 
     private void Start()
     {
         currentState = idle;
         currentSpeed = moveSpeed;
         currentState.EnterState(this);
-        enemyCollider = GetComponent<BoxCollider2D>();
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.GetComponent<PlayerController>())
+        {
+            KillZone.GameOver.Invoke();
+        }
     }
 
     private void Update()
@@ -34,4 +39,14 @@ public class ChomperStateManager : MonoBehaviour
     }
 
     public void RestoreSpeed() => currentSpeed = moveSpeed;
+
+    public float GetCurrentSpeed()
+    {
+        return currentSpeed;
+    }
+
+    public void SetCurrentSpeed(float speed)
+    {
+        currentSpeed = speed;
+    }
 }
