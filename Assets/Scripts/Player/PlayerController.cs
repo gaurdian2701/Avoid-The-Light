@@ -87,7 +87,31 @@ public class PlayerController : MonoBehaviour
         if (!boostStatus)
             currentBoostPower = 0f;
     }
-    
+
+    private bool IsGrounded()
+    {
+        if (Physics2D.Raycast(playerCollider.bounds.center, -transform.up, 0.9f, LayerMask.GetMask("Ground")))
+            return true;
+
+        return false;
+    }
+
+    private void JumpPerformed()
+    {
+        downwardVelocity = 1f;
+        currentBoostPower = canBoost ? boostPower : 0f;
+        FillBar.Invoke();
+        particleController.EnableParticles();
+    }
+
+    private void JumpCanceled()
+    {
+        currentBoostPower = 0f;
+        CheckIfGrounded();
+        FillBar.Invoke();
+        particleController.DisableParticles();
+    }
+
     public void MovePlayer(InputAction.CallbackContext context)
     {
         if (!context.performed)
@@ -113,27 +137,9 @@ public class PlayerController : MonoBehaviour
     public void PlayerJump(InputAction.CallbackContext context)
     {
         if (context.performed)
-        {
-            downwardVelocity = 1f;
-            currentBoostPower = canBoost ? boostPower : 0f;
-            FillBar.Invoke();
-            particleController.EnableParticles();
-        }
+            JumpPerformed();
         
         if(context.canceled)
-        {
-            currentBoostPower = 0f;
-            CheckIfGrounded();
-            FillBar.Invoke();
-            particleController.DisableParticles();
-        }
-    }
-
-    private bool IsGrounded()
-    {
-        if (Physics2D.Raycast(playerCollider.bounds.center, -transform.up, 0.9f, LayerMask.GetMask("Ground")))
-            return true;
-
-        return false;
+           JumpCanceled();
     }
 }
