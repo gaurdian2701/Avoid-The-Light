@@ -1,36 +1,99 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
 {
     [SerializeField] private float moveSpeed;
-    [SerializeField] private float jumpPower;
+    [SerializeField] private float boostPower;
+    [SerializeField] private float gravityRate;
 
     private Rigidbody2D rb;
     private CapsuleCollider2D playerCollider;
+    private ParticleController particleController;
+
     private float moveDirection;
-    private Color rayColor;
+    private float currentBoostPower;
+    private float downwardVelocity;
+
+    private bool canBoost;
+
+    public static Action FillBar;
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         playerCollider = GetComponent<CapsuleCollider2D>();
+        particleController = GetComponent<ParticleController>();
+
         moveDirection = 0f;
-        rayColor = Color.white;
+        currentBoostPower = 0f;
+        downwardVelocity = 0f;
+
+        canBoost = true;
+
+        BoostBar.BoostEnabled += SetCanBoost;
+    }
+
+    private void Start()
+    {
+        CheckIfGrounded();
     }
 
     private void FixedUpdate()
     {
-        rb.velocity = new Vector2(moveDirection * moveSpeed, rb.velocity.y);
+        ExecuteMovement();
     }
+
+    private void OnDestroy()
+    {
+        BoostBar.BoostEnabled -= SetCanBoost;
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        CheckIfGrounded();
+    }
+
+    private void ExecuteMovement()
+    {
+        rb.velocity = new Vector2(moveDirection * moveSpeed, currentBoostPower - IncreaseDownwardVelocity());
+    }
+
+    private void CheckIfGrounded()
+    {
+        if (IsGrounded())
+            downwardVelocity = 0f;
+
+        else
+            downwardVelocity = rb.gravityScale;
+    }
+
+    private float IncreaseDownwardVelocity()
+    {
+        if (rb.velocity.y >= 0f)
+            return 1f;
+
+        return downwardVelocity += gravityRate;
+    }
+
+    private void SetCanBoost(bool boostStatus)
+    {
+        canBoost = boostStatus;
+
+        if (!boostStatus)
+            currentBoostPower = 0f;
+    }
+    
     public void MovePlayer(InputAction.CallbackContext context)
     {
         if (!context.performed)
             return;
 
         moveDirection = context.ReadValue<float>();
-
 
         Vector3 newRotation;
 
@@ -49,21 +112,28 @@ public class PlayerController : MonoBehaviour
 
     public void PlayerJump(InputAction.CallbackContext context)
     {
-        if (!context.performed)
-            return;
-
-        rb.velocity = new Vector2(rb.velocity.x, jumpPower);
+        if (context.performed)
+        {
+            downwardVelocity = 1f;
+            currentBoostPower = canBoost ? boostPower : 0f;
+            FillBar.Invoke();
+            particleController.EnableParticles();
+        }
+        
+        if(context.canceled)
+        {
+            currentBoostPower = 0f;
+            CheckIfGrounded();
+            FillBar.Invoke();
+            particleController.DisableParticles();
+        }
     }
 
     private bool IsGrounded()
     {
-        if (Physics2D.Raycast(playerCollider.bounds.center, -transform.up, 1.3f, LayerMask.GetMask("Ground")))
-        {
-            rayColor = Color.green;
+        if (Physics2D.Raycast(playerCollider.bounds.center, -transform.up, 0.9f, LayerMask.GetMask("Ground")))
             return true;
-        }
 
-        rayColor = Color.red;
         return false;
     }
 }
