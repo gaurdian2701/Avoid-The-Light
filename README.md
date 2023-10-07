@@ -4,8 +4,8 @@ In this game, you take control of a robot with rocket boosters attached to it's 
 You have to manage your booster fuel while at the same time avoiding enemies and performing platforming.
 
 CONTROLS:
-A, D - Left and Right Respectively
-Spacebar - Boost
+A, D - Left and Right Respectively.
+Spacebar - Boost.
 
 Demo Video:
 
